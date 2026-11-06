@@ -1,0 +1,55 @@
+# Every hour: check the sites and their pipelines, publish the dashboard,
+# and open, update or close the alert issue (which GitHub emails about).
+name: Status
+
+on:
+  schedule:
+    - cron: "50 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+  pages: write
+  id-token: write
+  deployments: read
+  pull-requests: read
+
+concurrency:
+  group: status
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 collect.py --out site
+
+      - name: Alert
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 alert.py site
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5
+        with:
+          timeout: 1200000
