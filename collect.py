@@ -133,7 +133,9 @@ def up(url: str) -> dict:
     try:
         code = get(url + ("&" if "?" in url else "?") + f"t={int(t0)}", timeout=30)[0]
         ms = int((time.time() - t0) * 1000)
-        return check("ok" if code == 200 else "fail", "Site answers", f"HTTP {code} in {ms} ms", url, kind="site")
+        c = check("ok" if code == 200 else "fail", "Site answers", f"HTTP {code} in {ms} ms", url, kind="site")
+        c["ms"] = ms
+        return c
     except urllib.error.HTTPError as e:
         return check("fail", "Site answers", f"HTTP {e.code}", url, kind="site")
     except Exception as e:
@@ -274,7 +276,10 @@ def main() -> None:
     except Exception:
         hist = []
     hist = [h for h in hist if parse(h["t"]) > NOW - timedelta(days=14)]
+    ms = {r["repo"]: next((c["ms"] for c in r["checks"] if c.get("ms") is not None), None) for r in repos}
     hist.append({"t": iso(NOW), "state": status["state"], "repos": {r["repo"]: r["state"] for r in repos},
+                 "ms": {k: v for k, v in ms.items() if v is not None},
+                 "n": {s: sum(c["state"] == s for r in repos for c in r["checks"]) for s in ("ok", "warn", "fail")},
                  "bad": sorted(f"{r['repo']}|{c['name']}|{c['state']}" for r in repos for c in r["checks"] if c["state"] in ("warn", "fail"))})
     (a.out / "history.json").write_text(json.dumps(hist, separators=(",", ":")))
     bad = [(r["name"], c) for r in repos for c in r["checks"] if c["state"] in ("warn", "fail")]

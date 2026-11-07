@@ -34,18 +34,25 @@
 <style>:root{--accent-l:%%ACCENT%%;--accent-d:%%ACCENT_DARK%%}</style>
 <link rel="stylesheet" href="style.css">
 <script>
-  // The theme before first paint: the reader's choice, else the system's.
-  try { const t = localStorage.getItem("status.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+  // Theme and view before first paint: the reader's choices, else the defaults.
+  try {
+    const t = localStorage.getItem("status.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    const v = localStorage.getItem("status.view"); if (v === "compact") document.documentElement.dataset.view = v;
+  } catch (e) {}
 </script>
 </head>
 <body>
+%%SPRITE%%
 <a class="skip" href="#sites">Skip to the sites</a>
 <header class="bar">
   <div class="wrap bar-in">
     <a class="brand" href="%%HOME%%"><span class="brand-dot" aria-hidden="true"></span>%%SITE_NAME%%</a>
     <span class="crumb" aria-hidden="true">/</span>
     <span class="crumb-page">Status</span>
+    <span class="live" title="This page refreshes itself when a new check is published"><span class="live-dot" aria-hidden="true"></span>Live</span>
     <span class="spacer"></span>
+    <button id="keys" class="icon-btn" type="button" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
     <button id="refresh" class="icon-btn" type="button" title="Check for a newer status (R)" aria-label="Check for a newer status">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
     <button id="theme" class="icon-btn" type="button" aria-label="Switch theme" title="Switch theme">
@@ -53,21 +60,37 @@
       <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
     </button>
   </div>
+  <div class="next-bar" aria-hidden="true"><span id="nextFill"></span></div>
 </header>
 
-<main id="app" class="wrap" data-checked="%%CHECKED%%" data-next="%%NEXT%%" data-every="%%EVERY%%">
+<main id="app" class="wrap" data-checked="%%CHECKED%%" data-next="%%NEXT%%" data-every="%%EVERY%%" data-state="%%STATE%%">
   <section class="hero st-%%STATE%%" aria-labelledby="headline">
     <div class="hero-main">
       <p class="eyebrow">%%PAGE_TITLE%%</p>
       <h1 id="headline"><span class="pulse" aria-hidden="true"></span>%%HEADLINE%%</h1>
-      <p class="lede">The web tools, their deployments, scheduled pipelines and data feeds, checked every %%EVERY_TEXT%%. Last check <time class="ago" datetime="%%CHECKED%%">%%CHECKED_NICE%%</time>; next in about <span id="countdown">an hour</span>.</p>
+      <p class="lede">The web tools, their deployments, scheduled pipelines and data feeds, checked every %%EVERY_TEXT%%. Last check <time class="ago" datetime="%%CHECKED%%">%%CHECKED_NICE%%</time>; the next in about <span id="countdown">an hour</span>.</p>
+      <dl class="stats">
+        <div><dt>Sites</dt><dd data-count="%%N_SITES%%">%%N_SITES%%</dd></div>
+        <div><dt>Checks</dt><dd data-count="%%N_CHECKS%%">%%N_CHECKS%%</dd></div>
+        <div><dt>To look at</dt><dd data-count="%%N_BAD%%">%%N_BAD%%</dd></div>
+        <div><dt>Healthy, 14 days</dt><dd title="Share of hourly checks that found each site healthy, shown once there are 12 checks">%%HEALTHY%%</dd></div>
+      </dl>
     </div>
-    <dl class="stats">
-      <div><dt>Sites</dt><dd data-count="%%N_SITES%%">%%N_SITES%%</dd></div>
-      <div><dt>Checks</dt><dd data-count="%%N_CHECKS%%">%%N_CHECKS%%</dd></div>
-      <div><dt>To look at</dt><dd data-count="%%N_BAD%%">%%N_BAD%%</dd></div>
-      <div><dt>Healthy, 14 days</dt><dd title="Share of hourly checks that found every site healthy; shown once there are 12 checks">%%HEALTHY%%</dd></div>
-    </dl>
+    <div class="hero-ring">
+      %%RING%%
+      <ul class="legend">
+        <li><span class="sw sw-ok"></span>%%L_OK%%</li>
+        <li><span class="sw sw-warn"></span>%%L_WARN%%</li>
+        <li><span class="sw sw-fail"></span>%%L_FAIL%%</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="panel chart-panel" aria-labelledby="h-trend">
+    <div class="panel-head"><h2 id="h-trend" class="section-title">Problems over the last 14 days</h2>
+      <span class="legend inline"><span><span class="sw sw-warn"></span>warnings</span><span><span class="sw sw-fail"></span>failing</span></span></div>
+    %%PROBLEMS%%
+    <div class="axis"><span>14 days ago</span><span>7 days</span><span>now</span></div>
   </section>
 
   <nav class="tiles" aria-label="Sites at a glance">%%SUMMARY%%</nav>
@@ -77,35 +100,47 @@
     %%ATTENTION%%
   </section>
 
-  <div class="toolbar" role="toolbar" aria-label="Filter the checks">
+  <div class="toolbar" role="toolbar" aria-label="Filter and arrange the checks">
     <div class="filters" role="group" aria-label="Show">
       <button type="button" class="filter" data-filter="all" aria-pressed="true">All</button>
-      <button type="button" class="filter" data-filter="problems" aria-pressed="false">Problems</button>
-      <button type="button" class="filter" data-filter="site" aria-pressed="false">Sites</button>
-      <button type="button" class="filter" data-filter="pages" aria-pressed="false">Deploys</button>
-      <button type="button" class="filter" data-filter="workflow" aria-pressed="false">Workflows</button>
-      <button type="button" class="filter" data-filter="data" aria-pressed="false">Data</button>
-      <button type="button" class="filter" data-filter="pulls" aria-pressed="false">Pull requests</button>
+      <button type="button" class="filter" data-filter="problems" aria-pressed="false">Problems <span class="count">%%N_BAD%%</span></button>
+      <button type="button" class="filter" data-filter="site" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-site"/></svg>Sites</button>
+      <button type="button" class="filter" data-filter="pages" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pages"/></svg>Deploys</button>
+      <button type="button" class="filter" data-filter="workflow" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-workflow"/></svg>Workflows</button>
+      <button type="button" class="filter" data-filter="data" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-data"/></svg>Data</button>
+      <button type="button" class="filter" data-filter="pulls" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pulls"/></svg>Pull requests</button>
     </div>
     <label class="search"><span class="sr">Search the checks</span>
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-      <input id="q" type="search" placeholder="Search checks  /" autocomplete="off"></label>
-    <button type="button" class="fold-all" id="foldAll" aria-pressed="false">Collapse all</button>
+      <input id="q" type="search" placeholder="Search checks" autocomplete="off"><kbd>/</kbd></label>
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" class="view" data-view="detailed" aria-pressed="true" title="Every check, with charts (V)">Detailed</button>
+      <button type="button" class="view" data-view="compact" aria-pressed="false" title="One card per site (V)">Compact</button>
+    </div>
   </div>
 
   <div id="sites">%%SECTIONS%%</div>
   <p class="none" id="noMatch" hidden>No checks match. Clear the search or choose All.</p>
 
-  <section class="panel" aria-labelledby="h-inc">
-    <h2 id="h-inc" class="section-title">Recent changes</h2>
-    %%INCIDENTS%%
-  </section>
+  <div class="two">
+    <section class="panel" aria-labelledby="h-inc">
+      <h2 id="h-inc" class="section-title">Recent changes</h2>
+      %%INCIDENTS%%
+    </section>
+    <section class="panel embed" aria-labelledby="h-badge">
+      <h2 id="h-badge" class="section-title">Show the status elsewhere</h2>
+      <p class="quiet">A badge that follows the latest check, for a README or a web page. Each site also has its own (Copy badge, beside it).</p>
+      <p><img src="%%BADGE_URL%%" alt="Status badge" height="20"></p>
+      <div class="codebox"><code id="badgeMd">%%BADGE_MD%%</code><button class="copy" type="button" data-copy="%%BADGE_MD%%">Copy</button></div>
+      <p class="quiet small">The data behind the page: <a href="status.json">status.json</a> (latest check) and <a href="history.json">history.json</a> (14 days).</p>
+    </section>
+  </div>
 
   <section class="panel about" aria-labelledby="h-how">
     <h2 id="h-how" class="section-title">How this page works</h2>
     <div class="cols">
-      <p>Every %%EVERY_TEXT%% a GitHub Actions workflow checks each repository: that its site answers, its latest GitHub Pages deployment, open pull requests, every workflow's latest run (and whether a scheduled one is overdue), and how fresh each data feed is. The page is rebuilt from the result, so what you read here is the last check; it has %%N_RUNS%% checks of history.</p>
-      <p>A failure, or a warning that lasts three checks, opens an alert issue that emails the owner, and the issue closes itself when all is clear. The page is a reusable block: <a href="https://github.com/sr-dash/status">copy the repository</a>, list your own repositories in <code>status.config.yml</code>, and turn on GitHub Pages.</p>
+      <p>Every %%EVERY_TEXT%% a GitHub Actions workflow checks each repository: that its site answers and how fast, its latest GitHub Pages deployment, open pull requests, every workflow's latest run (and whether a scheduled one is overdue), and how fresh each data feed is. The page is rebuilt from the result; it holds %%N_RUNS%% checks of history.</p>
+      <p>A failure, or a warning that lasts three checks, opens an alert issue that emails the owner, and the issue closes itself when all is clear. The page is a reusable block: <a href="https://github.com/sr-dash/status">use the template</a>, list your own repositories in <code>status.config.yml</code>, and turn on GitHub Pages.</p>
     </div>
   </section>
 </main>
@@ -113,9 +148,24 @@
 <footer class="foot">
   <div class="wrap foot-in">
     <span>© %%YEAR%% <a href="%%AUTHOR_URL%%">%%AUTHOR%%</a></span>
-    <span><a href="https://github.com/sr-dash/status">Source</a> · <a href="status.json">status.json</a> · <a href="history.json">history.json</a></span>
+    <span><a href="https://github.com/sr-dash/status">Source and template</a> · <a href="status.json">status.json</a> · <a href="history.json">history.json</a></span>
   </div>
 </footer>
+
+<dialog id="help" aria-labelledby="h-help">
+  <h2 id="h-help">Keyboard shortcuts</h2>
+  <dl class="keys">
+    <div><dt><kbd>/</kbd></dt><dd>Search the checks</dd></div>
+    <div><dt><kbd>P</kbd></dt><dd>Show only problems</dd></div>
+    <div><dt><kbd>A</kbd></dt><dd>Show everything</dd></div>
+    <div><dt><kbd>V</kbd></dt><dd>Switch between detailed and compact</dd></div>
+    <div><dt><kbd>T</kbd></dt><dd>Switch light and dark</dd></div>
+    <div><dt><kbd>R</kbd></dt><dd>Check for a newer status</dd></div>
+    <div><dt><kbd>J</kbd> <kbd>K</kbd></dt><dd>Next and previous site</dd></div>
+    <div><dt><kbd>Esc</kbd></dt><dd>Clear the search, close this</dd></div>
+  </dl>
+  <form method="dialog"><button class="btn" type="submit">Close</button></form>
+</dialog>
 <div id="tip" class="tip" role="tooltip" hidden></div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <script src="app.js" defer></script>
