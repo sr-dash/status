@@ -335,6 +335,7 @@ def render(cfg, status, hist, out: Path) -> None:
         "SUMMARY": summary, "SECTIONS": sections, "INCIDENTS": incidents(hist, names),
         "OWNER": e(status.get("owner", "")), "YEAR": str(now.year), "N_RUNS": str(len(hist)),
         "BADGE_MD": e(md_all), "BADGE_URL": e(url + "badge.svg"),
+        "SOURCE": e(f"https://github.com/{status.get('source') or 'sr-dash/status'}"),
     }
     for k, v in repl.items():
         tpl = tpl.replace("%%" + k + "%%", v)
@@ -342,6 +343,15 @@ def render(cfg, status, hist, out: Path) -> None:
     for f in ("app.js", "style.css", "og.png"):
         if (WEB / f).exists():
             shutil.copy(WEB / f, out / f)
+    if cfg.get("_auto"):
+        # A page set up by itself gets its own preview image, if Pillow is there.
+        try:
+            import sys
+            sys.path.insert(0, str(WEB.parent / "scripts"))
+            import make_og
+            make_og.make(cfg, out / "og.png")
+        except Exception as err:
+            print(f"kept the default preview image ({err})")
     (out / "badges").mkdir(exist_ok=True)
     (out / "badge.svg").write_text(badge(pg["title"].lower(), st))
     for r in status["repos"]:

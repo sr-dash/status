@@ -2,6 +2,14 @@
 # this file, turn on GitHub Pages with "GitHub Actions" as the source, and the
 # Status workflow does the rest every hour. See README.md.
 
+# The repository this file was written for. In any other repository (a copy
+# made with "Use this template", or a fork), these settings are set aside and
+# the page sets itself up: the copy's owner, its Pages address and the
+# owner's repositories with a site or recent activity. To make a copy your
+# own, change this to your repository and edit the rest. `repos: auto` keeps
+# your page settings and finds the repositories for you.
+for_repository: sr-dash/status
+
 page:
   title: Pipeline status
   # Shown in the browser tab, search results and link previews.

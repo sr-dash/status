@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/sr-dash/status/discussions
+    about: Ask how to set up or customise your page, or float an idea before filing a request.
+  - name: Show and tell
+    url: https://github.com/sr-dash/status/discussions/categories/show-and-tell
+    about: Share your status page.
+  - name: A problem with one of the watched sites
+    url: https://sr-dash.github.io/status/
+    about: Problems with HelioField, HelioFleet and the other sites belong in their own repositories, linked from the page.

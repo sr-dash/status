@@ -24,7 +24,13 @@ def font(size, bold=False):
 
 
 def main():
-    cfg = yaml.safe_load((ROOT / "status.config.yml").read_text())
+    make(yaml.safe_load((ROOT / "status.config.yml").read_text()), ROOT / "web" / "og.png")
+    print("web/og.png")
+
+
+def make(cfg, path):
+    """Draw the preview image for a configuration (the render step calls this
+    for a page set up automatically)."""
     pg, repos = cfg["page"], cfg["repos"]
     W, H = 1200, 630
     bg, ink, muted, rule = (23, 26, 30), (233, 234, 234), (139, 145, 152), (42, 47, 52)
@@ -41,7 +47,7 @@ def main():
     n = cfg.get("check_every_hours", 1)
     g.text((72, 304), "checked every hour." if n == 1 else f"checked every {n:g} hours.", font=font(32), fill=muted)
     x, y = 72, 390
-    for r in repos:
+    for r in repos[:8]:
         name = r.get("name", r["repo"])
         w = g.textlength(name, font=font(28, True)) + 64
         if x + w > W - 72:
@@ -52,8 +58,7 @@ def main():
         x += w + 14
     url = pg["url"].replace("https://", "").rstrip("/")
     g.text((72, H - 64), url, font=font(26), fill=accent)
-    im.save(ROOT / "web" / "og.png", optimize=True)
-    print("web/og.png")
+    im.save(path, optimize=True)
 
 
 if __name__ == "__main__":

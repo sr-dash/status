@@ -1,26 +1,51 @@
 # GitHub status page
 
-A status page for your GitHub repositories and the sites they publish, rebuilt every hour by GitHub Actions and served by GitHub Pages, with email alerts through a GitHub issue. No server, no database, no external service.
+[![Pipeline status](https://sr-dash.github.io/status/badge.svg)](https://sr-dash.github.io/status/)
+[![Status workflow](https://github.com/sr-dash/status/actions/workflows/status.yml/badge.svg)](https://github.com/sr-dash/status/actions/workflows/status.yml)
+[![Use this template](https://img.shields.io/badge/use%20this-template-2ea44f?logo=github)](https://github.com/sr-dash/status/generate)
+[![MIT licence](https://img.shields.io/badge/licence-MIT-1f4e87)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/sr-dash/status?style=social)](https://github.com/sr-dash/status/stargazers)
+[![Using it? Tell me](https://img.shields.io/badge/using%20it%3F-tell%20me-2ea44f)](https://github.com/sr-dash/status/issues/new?template=i_use_this.yml)
+
+A status page for your GitHub repositories and the sites they publish, rebuilt every hour by GitHub Actions and served by GitHub Pages, with email alerts through a GitHub issue. No server, no database, no external service, and no setup beyond turning on Pages.
 
 **Live example:** https://sr-dash.github.io/status/
 
-What it checks, for each repository you list:
+| Site | Status |
+|---|---|
+| [HelioField](https://sr-dash.github.io/heliofield/) | [![HelioField status](https://sr-dash.github.io/status/badges/heliofield.svg)](https://sr-dash.github.io/status/#heliofield) |
+| [HelioField imagery](https://github.com/sr-dash/heliofield-imagery) | [![HelioField imagery status](https://sr-dash.github.io/status/badges/heliofield-imagery.svg)](https://sr-dash.github.io/status/#heliofield-imagery) |
+| [HelioField movies](https://sr-dash.github.io/heliofield-movies/) | [![HelioField movies status](https://sr-dash.github.io/status/badges/heliofield-movies.svg)](https://sr-dash.github.io/status/#heliofield-movies) |
+| [HelioFleet](https://sr-dash.github.io/heliofleet/) | [![HelioFleet status](https://sr-dash.github.io/status/badges/heliofleet.svg)](https://sr-dash.github.io/status/#heliofleet) |
+| [CryoNIRSP Viewer](https://sr-dash.github.io/cryonirsp-viewer/) | [![CryoNIRSP Viewer status](https://sr-dash.github.io/status/badges/cryonirsp-viewer.svg)](https://sr-dash.github.io/status/#cryonirsp-viewer) |
+| [Homepage](https://sr-dash.github.io/) | [![Homepage status](https://sr-dash.github.io/status/badges/sr-dash.github.io.svg)](https://sr-dash.github.io/status/#sr-dash.github.io) |
 
-- **Site**: the page answers, and how fast.
+> [!TIP]
+> **Using this template?** Please [star the repository](https://github.com/sr-dash/status/stargazers): it is the only way I can tell who finds it useful. Better still, [say what you use it for](https://github.com/sr-dash/status/issues/new?template=i_use_this.yml), or show your page in [Show and tell](https://github.com/sr-dash/status/discussions/categories/show-and-tell).
+
+## What it checks
+
+For each repository:
+
+- **Site**: the page answers, and how fast (a 14-day response-time line).
 - **Deploy**: the latest GitHub Pages deployment.
 - **Pull requests**: open ones, flagged after two days (a data update waiting to be merged, say).
 - **Workflows**: every workflow's latest run; for scheduled ones, whether a run is overdue, read from the workflow's own `cron` lines.
 - **Data**: how fresh your published data is, from a timestamp in a JSON file, or any check you write in Python.
 
-The page is complete HTML from the build, so search engines index it and it reads without JavaScript. In the browser it adds light and dark themes, filters, search, live times, a countdown to the next check, foldable panels, a 14-day history strip per site with tooltips, and refreshing in place. It carries a description, canonical link, Open Graph and Twitter cards, structured data (schema.org), a sitemap and, if you want, Google Analytics.
+The page is complete HTML from the build, so search engines index it and it reads without JavaScript. In the browser it adds a ring of check states, a 14-day problems chart, per-site history strips and response-time lines with tooltips, detailed and compact views, filters, search, keyboard shortcuts (`?` lists them), light and dark themes, a countdown to the next check, and refreshing in place with a notice when a site changes state. It carries a description, canonical link, Open Graph and Twitter cards, structured data (schema.org), a sitemap, status badges (`badge.svg`, `badges/<repo>.svg`) and, if you want, Google Analytics.
 
 ## Use it for your own repositories
 
-1. **Use this template** (top of the page) to make your own copy, public or private.
-2. Edit **`status.config.yml`**: your page title, description and URL, then the repositories to watch. Each needs `repo` and, if it has a site, `url`; add data checks as you like (below).
-3. Turn on **GitHub Pages**: Settings → Pages → Source: **GitHub Actions**.
-4. Run the **Status** workflow once from the Actions tab (it then runs every hour), and open `https://<you>.github.io/<repo>/`.
-5. Optional: `python scripts/make_og.py` remakes the link-preview image (`web/og.png`) from your config.
+**With no setup.** Make your copy, turn on Pages, run it once:
+
+1. **[Use this template](https://github.com/sr-dash/status/generate)** to make your own copy (public, so Pages is free).
+2. Settings → Pages → Source: **GitHub Actions**.
+3. Actions → **Status** → **Run workflow**. It then runs every hour.
+
+Your copy sets itself up: it sees it is not `sr-dash/status`, sets the settings here aside, and watches your account's repositories that have a GitHub Pages site or were pushed to in the last 60 days, at `https://<you>.github.io/<copy>/`, with a preview image drawn for you. Alerts go to you.
+
+**Your own way.** Edit `status.config.yml`: set `for_repository` to your copy (`you/status`), then your page title, description, URL and analytics ID, and the repositories to watch, each with `repo`, its site `url`, an `about` line and any data checks. With `repos: auto` your page settings stay and the list of repositories is still found for you. `python scripts/make_og.py` remakes the preview image from your settings.
 
 Public repositories need no token. To watch private ones, add a fine-grained token with read access to their Actions, Deployments, Contents and Pull requests as the secret **`STATUS_TOKEN`**.
 
@@ -30,6 +55,7 @@ Public repositories need no token. To watch private ones, add a fine-grained tok
 repos:
   - repo: my-site
     url: https://me.github.io/my-site/
+    about: What the site is, in a line.
     checks:
       - type: json_age            # a timestamp or date in a JSON file is fresh enough
         label: Daily data
@@ -48,24 +74,39 @@ repos:
         function: my_check
 ```
 
-A custom check receives a context with helpers (`check`, `age_check`, `jget`, `parse`, `hours`, `now`, and `shared` for passing values between checks) and returns one check or a list. `custom_checks.py` here holds this page's own checks for HelioField; replace them with yours.
+A custom check receives a context with helpers (`check`, `age_check`, `jget`, `parse`, `hours`, `now`, and `shared` for passing values between checks) and returns one check or a list. `custom_checks.py` holds this page's own checks for HelioField; replace them with yours.
 
 ### Alerts by email
 
-A failure alerts at once; a warning when it lasts `warn_after_checks` checks in a row (3 by default), so a brief delay does not. While anything is wrong, one issue labelled `status-alert` stays open in this repository, assigned to `alerts.assignee`: it opens with the list, each new problem adds a comment, and it closes itself with a comment when all is clear. GitHub emails you each time, following your notification settings (Settings → Notifications; "Participating" covers issues assigned to you). Set `alerts.enabled: false` to turn alerts off.
+A failure alerts at once; a warning when it lasts `warn_after_checks` checks in a row (3 by default), so a brief delay does not. While anything is wrong, one issue labelled `status-alert` stays open in your copy, assigned to `alerts.assignee` (you, when set up automatically): it opens with the list, each new problem adds a comment, and it closes itself with a comment when all is clear. GitHub emails you each time, following your notification settings (Settings → Notifications; "Participating" covers issues assigned to you). Set `alerts.enabled: false` to turn them off.
+
+### Status badges
+
+Each build writes `badge.svg` (the whole page) and `badges/<repo>.svg` (one site), coloured by the latest check. Put one in a README:
+
+```markdown
+[![Status](https://<you>.github.io/<copy>/badges/<repo>.svg)](https://<you>.github.io/<copy>/#<repo>)
+```
+
+The page's **Copy badge** buttons give you this, filled in.
 
 ## How it fits together
 
 | File | What it does |
 |---|---|
-| `status.config.yml` | Everything specific to your page and repositories |
-| `collect.py` | Runs the checks; writes `site/status.json` and `site/history.json` (14 days, read back from the published page each hour) |
-| `custom_checks.py` | Your own checks |
-| `render.py` | Writes the page (`site/index.html`), sitemap and assets from `web/` |
+| `status.config.yml` | Everything specific to a page and its repositories |
+| `collect.py` | Sets itself up in a copy; runs the checks; writes `site/status.json` and `site/history.json` (14 days, read back from the published page each hour) |
+| `custom_checks.py` | Checks of your own |
+| `render.py` | Writes the page (`site/index.html`), badges, sitemap and assets from `web/` |
 | `web/` | `template.html`, `style.css`, `app.js`, `og.png` |
+| `scripts/make_og.py` | The link-preview image |
 | `alert.py` | Opens, updates or closes the alert issue |
 | `.github/workflows/status.yml` | Every hour: check, build, alert, deploy to Pages |
 
-Run it locally: `pip install pyyaml && GITHUB_TOKEN=$(gh auth token) python collect.py --out site`, then serve `site/`.
+Run it locally: `pip install pyyaml pillow && GITHUB_TOKEN=$(gh auth token) python collect.py --out site`, then serve `site/` (for example `python -m http.server -d site`). Set `GITHUB_REPOSITORY=you/copy` to see what a copy would set up.
+
+## Contributing
+
+Ideas, new check types and fixes are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the [security policy](SECURITY.md).
 
 MIT licence. Made by [Soumyaranjan Dash](https://sr-dash.github.io/).

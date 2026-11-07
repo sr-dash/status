@@ -1,0 +1,22 @@
+name: Idea or new check
+description: A kind of check, a setting or a feature the status page should have.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What would you like to watch or do?
+      description: The signal you care about (a data feed, a service, a deadline) or the thing you would like the page to do.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could it work?
+      description: Optional. Where the information comes from (an API, a file, a header), and when it should warn or fail.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Helping
+      options:
+        - label: I could send a pull request for this

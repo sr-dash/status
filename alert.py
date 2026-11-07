@@ -17,7 +17,10 @@ from pathlib import Path
 
 import yaml
 
-CFG = yaml.safe_load((Path(__file__).resolve().parent / "status.config.yml").read_text())
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from collect import load_config                                # the same settings, automatic in a copy
+
+CFG = load_config(Path(__file__).resolve().parent / "status.config.yml")
 REPO = os.environ.get("GITHUB_REPOSITORY", "")               # the repository this runs in
 OWNER = CFG.get("alerts", {}).get("assignee") or CFG.get("owner") or REPO.split("/")[0]
 DASH = CFG["page"]["url"].rstrip("/") + "/"

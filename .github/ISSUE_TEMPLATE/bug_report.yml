@@ -1,0 +1,43 @@
+name: Something looks wrong
+description: A check that is wrong, a copy that does not set itself up, or a page that breaks.
+labels: [bug]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Your status page
+      description: Its address, if it is published.
+      placeholder: https://you.github.io/status/
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Which part
+      options:
+        - A check gives the wrong state
+        - My copy did not set itself up
+        - The workflow fails
+        - Alert issues or emails
+        - Badges
+        - Layout, themes or the browser script
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong
+      description: What you see, and what you expected. For a check, say what the site or workflow was actually doing.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Workflow log
+      description: Optional. The lines from the Status workflow's "Check and build the page" step, if it failed.
+      render: text
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      description: For problems with the page itself.
+      placeholder: Firefox 133 on Windows, Safari on iPhone, ...

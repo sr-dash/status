@@ -233,6 +233,66 @@ def data_check(c: dict, ctx: dict) -> list[dict]:
         return [check("fail", label if kind != "custom" else c["function"], f"Not readable: {type(e).__name__}: {e}", c.get("url"), kind="data")]
 
 
+# ------------------------------------------------------------ setting itself up
+def discover(owner: str, skip: str = "", limit: int = 12) -> list[dict]:
+    """The owner's repositories worth watching: those with a GitHub Pages
+    site, then those pushed to in the last 60 days; no forks or archives."""
+    found = api(f"users/{owner}/repos?per_page=100&type=owner&sort=pushed")
+    recent = NOW - timedelta(days=60)
+    keep = [r for r in found if not r["fork"] and not r["archived"] and r["name"] != skip
+            and (r.get("has_pages") or parse(r["pushed_at"]) > recent)]
+    keep.sort(key=lambda r: (not r.get("has_pages"), -parse(r["pushed_at"]).timestamp()))
+    out = []
+    for r in keep[:limit]:
+        url = None
+        if r.get("has_pages"):
+            try:
+                url = api(f"repos/{owner}/{r['name']}/pages").get("html_url")
+            except Exception:
+                url = f"https://{owner.lower()}.github.io/{r['name']}/"
+        out.append({"repo": r["name"], "name": r["name"], "url": url, "about": r.get("description") or ""})
+    return out
+
+
+def auto_config(cfg: dict, here: str, foreign: bool) -> dict:
+    """The configuration for a copy of this repository, worked out from where
+    it runs: its owner, its Pages address and the owner's repositories. In a
+    copy (`foreign`), the original's page settings, analytics and own checks
+    are left behind; with `repos: auto` in your own, only the list is found."""
+    owner, name = here.split("/")
+    try:
+        url = api(f"repos/{here}/pages").get("html_url")
+    except Exception:
+        url = None
+    url = url or f"https://{owner.lower()}.github.io/{name}/"
+    cfg = dict(cfg)
+    if foreign:
+        cfg["page"] = {"title": "Status", "site_name": owner,
+                       "description": f"Live status of {owner}'s GitHub repositories and the sites they publish: deployments, "
+                                      f"scheduled workflows and pull requests, checked every hour.",
+                       "url": url, "author": owner, "author_url": f"https://github.com/{owner}", "home": f"https://github.com/{owner}",
+                       "accent": "#1f4e87", "accent_dark": "#7aa9e3"}
+        cfg["alerts"] = {"enabled": True, "assignee": owner, "warn_after_checks": 3}
+        cfg["check_every_hours"] = 1
+    cfg["owner"] = owner
+    cfg["repos"] = discover(owner, skip=name)
+    cfg["_auto"] = True
+    print(f"set up automatically for {here}: {len(cfg['repos'])} repositories, page {url}")
+    return cfg
+
+
+def load_config(path: Path) -> dict:
+    """status.config.yml, or an automatic one when this runs in a copy of the
+    repository it was written for (or when it says `repos: auto`)."""
+    cfg = yaml.safe_load(path.read_text()) if path.exists() else {}
+    here = os.environ.get("GITHUB_REPOSITORY", "")
+    mine = (cfg.get("for_repository") or "").lower()
+    foreign = bool(here and mine and here.lower() != mine) or not cfg.get("page")
+    if here and (foreign or cfg.get("repos") in (None, "auto")):
+        return auto_config(cfg, here, foreign)
+    return cfg
+
+
 def worst(checks: list[dict]) -> str:
     return ["ok", "warn", "fail"][max((RANK[c["state"]] for c in checks), default=0)]
 
@@ -243,7 +303,7 @@ def main() -> None:
     ap.add_argument("--out", type=Path, default=ROOT / "site")
     ap.add_argument("--no-render", action="store_true")
     a = ap.parse_args()
-    cfg = yaml.safe_load(a.config.read_text())
+    cfg = load_config(a.config)
     owner = cfg.get("owner") or os.environ.get("GITHUB_REPOSITORY_OWNER") or os.environ.get("GITHUB_REPOSITORY", "/").split("/")[0]
     page_url = cfg["page"]["url"].rstrip("/") + "/"
     sys.path.insert(0, str(ROOT))
@@ -269,6 +329,7 @@ def main() -> None:
         repos.append({"repo": repo, "name": name, "about": r.get("about", ""), "url": site,
                       "github": f"https://github.com/{owner}/{repo}", "state": worst(checks), "checks": checks})
     status = {"checked": iso(NOW), "every_h": cfg.get("check_every_hours", 1), "owner": owner,
+              "source": os.environ.get("GITHUB_REPOSITORY") or cfg.get("for_repository"),
               "state": worst([c for r in repos for c in r["checks"]]), "repos": repos}
     (a.out / "status.json").write_text(json.dumps(status, indent=1))
     try:

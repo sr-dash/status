@@ -1,0 +1,35 @@
+name: I use this
+description: Tell me how you use the status page. It takes two minutes and helps me keep it going.
+title: "[Using it] "
+labels: [user]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking a moment. Everything here is public, so share only what you are happy for others to read. A ☆ star on the repository counts too.
+  - type: input
+    id: page
+    attributes:
+      label: Your status page
+      description: Optional. Its address.
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you watch with it?
+      description: Your sites, data pipelines, a lab's tools, a course, anything.
+    validations:
+      required: true
+  - type: dropdown
+    id: list
+    attributes:
+      label: May I mention your page as an example?
+      options:
+        - "Yes"
+        - "No, keep it to this issue"
+    validations:
+      required: true
+  - type: textarea
+    id: wish
+    attributes:
+      label: Anything you wish it did?
+      description: Optional.
