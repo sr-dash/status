@@ -27,9 +27,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Check
+      - name: Tools
+        run: pip install pyyaml
+
+      # STATUS_TOKEN (optional secret): a token that can read private
+      # repositories listed in status.config.yml; public ones need none.
+      - name: Check and build the page
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          STATUS_TOKEN: ${{ secrets.STATUS_TOKEN }}
         run: python3 collect.py --out site
 
       - name: Alert

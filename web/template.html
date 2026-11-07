@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" data-state="%%STATE%%">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>%%TITLE%%</title>
+%%ANALYTICS%%
+<meta name="description" content="%%DESC%%">
+<meta name="author" content="%%AUTHOR%%">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="%%URL%%">
+<meta name="theme-color" content="#fbfbfa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171a1e" media="(prefers-color-scheme: dark)">
+%%FAVICON%%
+%%TOUCH%%
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="%%SITE_NAME%%">
+<meta property="og:title" content="%%TITLE%%">
+<meta property="og:description" content="%%DESC%%">
+<meta property="og:url" content="%%URL%%">
+<meta property="og:image" content="%%OG%%">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="%%PAGE_TITLE%%: the sites and their scheduled pipelines, checked every hour">
+<meta name="twitter:card" content="summary_large_image">
+%%TWITTER%%
+<meta name="twitter:title" content="%%TITLE%%">
+<meta name="twitter:description" content="%%DESC%%">
+<meta name="twitter:image" content="%%OG%%">
+<script type="application/ld+json">%%LD%%</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>:root{--accent-l:%%ACCENT%%;--accent-d:%%ACCENT_DARK%%}</style>
+<link rel="stylesheet" href="style.css">
+<script>
+  // The theme before first paint: the reader's choice, else the system's.
+  try { const t = localStorage.getItem("status.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#sites">Skip to the sites</a>
+<header class="bar">
+  <div class="wrap bar-in">
+    <a class="brand" href="%%HOME%%"><span class="brand-dot" aria-hidden="true"></span>%%SITE_NAME%%</a>
+    <span class="crumb" aria-hidden="true">/</span>
+    <span class="crumb-page">Status</span>
+    <span class="spacer"></span>
+    <button id="refresh" class="icon-btn" type="button" title="Check for a newer status (R)" aria-label="Check for a newer status">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
+    <button id="theme" class="icon-btn" type="button" aria-label="Switch theme" title="Switch theme">
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="app" class="wrap" data-checked="%%CHECKED%%" data-next="%%NEXT%%" data-every="%%EVERY%%">
+  <section class="hero st-%%STATE%%" aria-labelledby="headline">
+    <div class="hero-main">
+      <p class="eyebrow">%%PAGE_TITLE%%</p>
+      <h1 id="headline"><span class="pulse" aria-hidden="true"></span>%%HEADLINE%%</h1>
+      <p class="lede">The web tools, their deployments, scheduled pipelines and data feeds, checked every %%EVERY_TEXT%%. Last check <time class="ago" datetime="%%CHECKED%%">%%CHECKED_NICE%%</time>; next in about <span id="countdown">an hour</span>.</p>
+    </div>
+    <dl class="stats">
+      <div><dt>Sites</dt><dd data-count="%%N_SITES%%">%%N_SITES%%</dd></div>
+      <div><dt>Checks</dt><dd data-count="%%N_CHECKS%%">%%N_CHECKS%%</dd></div>
+      <div><dt>To look at</dt><dd data-count="%%N_BAD%%">%%N_BAD%%</dd></div>
+      <div><dt>Healthy, 14 days</dt><dd title="Share of hourly checks that found every site healthy; shown once there are 12 checks">%%HEALTHY%%</dd></div>
+    </dl>
+  </section>
+
+  <nav class="tiles" aria-label="Sites at a glance">%%SUMMARY%%</nav>
+
+  <section class="panel" aria-labelledby="h-att">
+    <h2 id="h-att" class="section-title">Needs a look</h2>
+    %%ATTENTION%%
+  </section>
+
+  <div class="toolbar" role="toolbar" aria-label="Filter the checks">
+    <div class="filters" role="group" aria-label="Show">
+      <button type="button" class="filter" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" class="filter" data-filter="problems" aria-pressed="false">Problems</button>
+      <button type="button" class="filter" data-filter="site" aria-pressed="false">Sites</button>
+      <button type="button" class="filter" data-filter="pages" aria-pressed="false">Deploys</button>
+      <button type="button" class="filter" data-filter="workflow" aria-pressed="false">Workflows</button>
+      <button type="button" class="filter" data-filter="data" aria-pressed="false">Data</button>
+      <button type="button" class="filter" data-filter="pulls" aria-pressed="false">Pull requests</button>
+    </div>
+    <label class="search"><span class="sr">Search the checks</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="q" type="search" placeholder="Search checks  /" autocomplete="off"></label>
+    <button type="button" class="fold-all" id="foldAll" aria-pressed="false">Collapse all</button>
+  </div>
+
+  <div id="sites">%%SECTIONS%%</div>
+  <p class="none" id="noMatch" hidden>No checks match. Clear the search or choose All.</p>
+
+  <section class="panel" aria-labelledby="h-inc">
+    <h2 id="h-inc" class="section-title">Recent changes</h2>
+    %%INCIDENTS%%
+  </section>
+
+  <section class="panel about" aria-labelledby="h-how">
+    <h2 id="h-how" class="section-title">How this page works</h2>
+    <div class="cols">
+      <p>Every %%EVERY_TEXT%% a GitHub Actions workflow checks each repository: that its site answers, its latest GitHub Pages deployment, open pull requests, every workflow's latest run (and whether a scheduled one is overdue), and how fresh each data feed is. The page is rebuilt from the result, so what you read here is the last check; it has %%N_RUNS%% checks of history.</p>
+      <p>A failure, or a warning that lasts three checks, opens an alert issue that emails the owner, and the issue closes itself when all is clear. The page is a reusable block: <a href="https://github.com/sr-dash/status">copy the repository</a>, list your own repositories in <code>status.config.yml</code>, and turn on GitHub Pages.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <span>© %%YEAR%% <a href="%%AUTHOR_URL%%">%%AUTHOR%%</a></span>
+    <span><a href="https://github.com/sr-dash/status">Source</a> · <a href="status.json">status.json</a> · <a href="history.json">history.json</a></span>
+  </div>
+</footer>
+<div id="tip" class="tip" role="tooltip" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="app.js" defer></script>
+</body>
+</html>

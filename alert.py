@@ -9,15 +9,20 @@ Needs the gh CLI and GH_TOKEN.
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
-OWNER, REPO = "sr-dash", "sr-dash/status"
-DASH = "https://sr-dash.github.io/status/"
+import yaml
+
+CFG = yaml.safe_load((Path(__file__).resolve().parent / "status.config.yml").read_text())
+REPO = os.environ.get("GITHUB_REPOSITORY", "")               # the repository this runs in
+OWNER = CFG.get("alerts", {}).get("assignee") or CFG.get("owner") or REPO.split("/")[0]
+DASH = CFG["page"]["url"].rstrip("/") + "/"
 LABEL = "status-alert"
-HOLD = 3
+HOLD = int(CFG.get("alerts", {}).get("warn_after_checks", 3))
 
 
 def gh(*args, input=None):
@@ -25,6 +30,12 @@ def gh(*args, input=None):
 
 
 def main(site: Path = Path("site")) -> None:
+    if not CFG.get("alerts", {}).get("enabled", True):
+        print("alerts are off in status.config.yml")
+        return
+    # The label, made once; harmless if it is already there.
+    subprocess.run(["gh", "label", "create", LABEL, "-R", REPO, "--color", "b3261e",
+                    "--description", "Something in the sites or pipelines needs a look"], capture_output=True)
     status = json.loads((site / "status.json").read_text())
     hist = json.loads((site / "history.json").read_text())
     recent = [set(h.get("bad", [])) for h in hist[-HOLD:]]

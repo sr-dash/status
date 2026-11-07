@@ -1,0 +1,105 @@
+# Status page configuration. Copy this repository (Use this template), edit
+# this file, turn on GitHub Pages with "GitHub Actions" as the source, and the
+# Status workflow does the rest every hour. See README.md.
+
+page:
+  title: Pipeline status
+  # Shown in the browser tab, search results and link previews.
+  site_name: Soumyaranjan Dash
+  description: >-
+    Live status of Soumyaranjan Dash's solar-physics web tools (HelioField,
+    HelioFleet, the CryoNIRSP Viewer and their data pipelines), checked every
+    hour: sites, deployments, scheduled workflows and how fresh each data feed is.
+  # Where the page is served; used for the canonical link, sitemap and previews.
+  url: https://sr-dash.github.io/status/
+  author: Soumyaranjan Dash
+  author_url: https://sr-dash.github.io/
+  # Google Analytics measurement ID; leave empty for none.
+  analytics: G-8X5BSNF3VV
+  twitter: "@soumyatheory"
+  # Optional: icons from your own site (absolute URLs); a status dot otherwise.
+  favicon: https://sr-dash.github.io/assets/data/favicon-32.png
+  apple_touch_icon: https://sr-dash.github.io/assets/data/apple-touch-icon.png
+  home: https://sr-dash.github.io/
+  # Colours: the accent, light and dark.
+  accent: "#1f4e87"
+  accent_dark: "#7aa9e3"
+
+# Everything that is checked. `owner` is the GitHub user or organisation;
+# leave it out to use the owner of this repository.
+owner: sr-dash
+check_every_hours: 1
+
+alerts:
+  # Opens, updates and closes an issue in this repository; GitHub emails you.
+  enabled: true
+  assignee: sr-dash
+  # A warning alerts only when it lasts this many checks; failures at once.
+  warn_after_checks: 3
+
+repos:
+  - repo: heliofield
+    name: HelioField
+    url: https://sr-dash.github.io/heliofield/
+    about: The Sun's coronal magnetic field in 3D, with a new PFSS model each day.
+    checks:
+      - type: custom
+        function: heliofield_product
+
+  - repo: heliofield-imagery
+    name: HelioField imagery
+    url: https://sr-dash.github.io/heliofield-imagery/index.json
+    about: Daily solar images for HelioField's Observations page.
+    checks:
+      - type: custom
+        function: imagery_latest
+      - type: custom
+        function: imagery_retries
+
+  - repo: heliofield-movies
+    name: HelioField movies
+    url: https://sr-dash.github.io/heliofield-movies/
+    about: Movies of the Sun since 2010, one Carrington rotation per frame.
+    checks:
+      - type: json_age
+        label: Movies
+        url: https://sr-dash.github.io/heliofield-movies/movies.json
+        path: made
+        warn_hours: 960
+        fail_hours: 1680
+
+  - repo: heliofleet
+    name: HelioFleet
+    url: https://sr-dash.github.io/heliofleet/
+    about: Where the Sun-watching spacecraft are, on any date since 2010.
+    checks:
+      - type: json_due
+        label: Ephemerides
+        url: https://sr-dash.github.io/heliofleet/data/manifest.json
+        path: next_update
+        made_path: generated
+        warn_hours: 48
+        fail_hours: 168
+      - type: json_age
+        label: Observation lists
+        url: https://sr-dash.github.io/heliofleet/data/obs/index.json
+        path: generated
+        warn_hours: 840
+        fail_hours: 1440
+
+  - repo: cryonirsp-viewer
+    name: CryoNIRSP Viewer
+    url: https://sr-dash.github.io/cryonirsp-viewer/
+    about: Where DKIST's Cryo-NIRSP has pointed, and its datasets.
+    checks:
+      - type: json_age
+        label: Dataset inventory
+        url: https://sr-dash.github.io/cryonirsp-viewer/data/cryonirsp_dataset_details.json
+        path: generated_at
+        warn_hours: 840
+        fail_hours: 1560
+
+  - repo: sr-dash.github.io
+    name: Homepage
+    url: https://sr-dash.github.io/
+    about: Research, publications and live panels from the tools.
