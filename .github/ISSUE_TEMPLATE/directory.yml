@@ -1,0 +1,37 @@
+name: Add a status page to the directory
+description: An open-source status page, or the live status page of a service research software depends on.
+title: "[Directory] "
+labels: [directory]
+body:
+  - type: input
+    id: repo
+    attributes:
+      label: Repository or status page
+      description: The GitHub repository (owner/name) of an open-source project, or the address of a service's status page.
+      placeholder: owner/name, or https://status.example.org
+    validations:
+      required: true
+  - type: input
+    id: live
+    attributes:
+      label: A live page
+      description: A page that shows it working (a demo, or a status page built with it).
+      placeholder: https://...
+  - type: dropdown
+    id: section
+    attributes:
+      label: Which section
+      options:
+        - Runs on GitHub alone
+        - Serverless, on Cloudflare
+        - Self-hosted
+        - Status pages research software depends on
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: How it runs, and what it watches
+      description: A line each, as in the directory.
+    validations:
+      required: true

@@ -1,0 +1,184 @@
+# The directory of status pages: DIRECTORY.md, the README's comparison and
+# the /directory/ page are all made from this file by directory.py.
+# Add a project with `repo` (owner/name), `live` (a page that shows it
+# working) and a line on how it runs; stars, licence and activity are read
+# from GitHub, and the live page is checked every hour.
+
+sections:
+  - id: github
+    title: Runs on GitHub alone
+    about: >-
+      No server: GitHub Actions does the checking on a schedule and GitHub Pages
+      serves the page, so it costs nothing and needs no hosting. This project
+      is one of these.
+    projects:
+      - repo: sr-dash/status
+        name: sr-dash/status
+        live: https://sr-dash.github.io/status/
+        how: Python in Actions, a static page on Pages; alerts through an issue
+        watches: Sites, Pages deployments, every workflow's runs and schedule, pull requests, data freshness
+        note: Sets itself up in a copy with no edits.
+      - repo: upptime/upptime
+        name: Upptime
+        live: https://demo.upptime.js.org
+        how: Actions on a schedule, a Svelte page on Pages, issues for incidents
+        watches: URL uptime and response time
+      - repo: cstate/cstate
+        name: cState
+        live: https://cstate.mnts.lt
+        how: Hugo static site on Pages or Netlify; incidents as Markdown files
+        watches: Incidents you write
+      - repo: mehatab/fettle
+        name: Fettle
+        live: https://fettle.mehatab.info
+        how: Actions, Pages and issues for incidents
+        watches: URL uptime
+      - repo: statsig-io/statuspage
+        name: Statsig status page
+        live: https://status.statsig.com
+        how: Plain HTML and JavaScript on Pages, a shell script in Actions
+        watches: URL uptime
+      - repo: tadhglewis/issue-status
+        name: Issue Status
+        live: https://tadhglewis.github.io/issue-status
+        how: A React page that reads incidents from GitHub issues
+        watches: Incidents and components you write
+      - repo: Cyclenerd/static_status
+        name: Static status
+        live: https://cyclenerd.github.io/static_status/
+        how: A Bash script that writes a static page
+        watches: Hosts, ports and URLs
+      - repo: bderenzo/tinystatus
+        name: tinystatus
+        how: A small shell script that writes a static page
+        watches: Hosts, ports and URLs
+      - repo: Bullrich/Status-Page
+        name: GitHub Status Page
+        live: https://bullrich.dev/Status-Page/
+        how: Actions for the metrics, issues for incidents, Pages for the page
+        watches: URL uptime
+      - repo: weeblrpress/clearstatus
+        name: ClearStatus
+        how: Hugo static site on Netlify; events from a Git repository
+        watches: Incidents you write
+
+  - id: edge
+    title: Serverless, on Cloudflare
+    about: >-
+      Cloudflare Workers do the checking and Pages serves the page: no server
+      of your own, within Cloudflare's free tier.
+    projects:
+      - repo: lyc8503/UptimeFlare
+        name: UptimeFlare
+        live: https://uptimeflare.pages.dev
+        how: Cloudflare Workers and Pages
+        watches: URL and TCP uptime
+      - repo: eidam/cf-workers-status-page
+        name: Workers Status Page
+        how: Cloudflare Workers with KV storage
+        watches: URL uptime
+
+  - id: hosted
+    title: Self-hosted
+    about: >-
+      Run on your own server or container; the most complete tools, with
+      dashboards, many kinds of monitor and notifications.
+    projects:
+      - repo: louislam/uptime-kuma
+        name: Uptime Kuma
+        live: https://demo.kuma.pet
+        how: Node.js, one Docker container
+        watches: HTTP, TCP, DNS, ping, databases and more
+      - repo: TwiN/gatus
+        name: Gatus
+        live: https://status.twin.sh
+        how: Go, configured in YAML
+        watches: HTTP, TCP, DNS and ICMP, with conditions on the response
+      - repo: cachethq/cachet
+        name: Cachet
+        live: https://cachethq.io
+        how: PHP (Laravel)
+        watches: Components and incidents
+      - repo: rajnandan1/kener
+        name: Kener
+        live: https://kener.ing
+        how: SvelteKit and Node.js
+        watches: HTTP, TCP, DNS and more, with incidents
+      - repo: openstatusHQ/openstatus
+        name: OpenStatus
+        live: https://status.openstatus.dev
+        how: Self-hosted or their hosted service
+        watches: Uptime from many regions
+      - repo: bluewave-labs/Checkmate
+        name: Checkmate
+        live: https://checkmate.so
+        how: React, Node.js and MongoDB
+        watches: Uptime, response times, server hardware
+      - repo: statping-ng/statping-ng
+        name: Statping-ng
+        live: https://statping-ng.github.io
+        how: Go, one binary or Docker
+        watches: HTTP, TCP, UDP, ICMP and gRPC
+      - repo: valeriansaliou/vigil
+        name: Vigil
+        live: https://status.crisp.chat
+        how: Rust
+        watches: HTTP, TCP and ICMP, with probes from your own services
+      - repo: 0xfurai/peekaping
+        name: Peekaping
+        live: https://peekaping.com
+        how: Go and React
+        watches: HTTP, TCP, ping, DNS and more
+
+  - id: services
+    title: Status pages research software depends on
+    about: >-
+      Not software to install: the live status pages of services that open
+      research code, papers and data rely on, worth a bookmark when a build,
+      a release or a DOI misbehaves.
+    pages:
+      - name: GitHub
+        live: https://www.githubstatus.com
+        about: Git, Actions, Pages, Packages
+      - name: GitLab
+        live: https://status.gitlab.com
+        about: GitLab.com and its CI
+      - name: Python and PyPI
+        live: https://status.python.org
+        about: PyPI, python.org, the package index
+      - name: conda-forge
+        live: https://conda-forge.org/status/
+        about: Build infrastructure and migrations
+      - name: Read the Docs
+        live: https://status.readthedocs.com
+        about: Documentation builds and hosting
+      - name: npm
+        live: https://status.npmjs.org
+        about: The JavaScript package registry
+      - name: ORCID
+        live: https://status.orcid.org
+        about: Researcher identifiers and sign-in
+      - name: Crossref
+        live: https://status.crossref.org
+        about: DOI registration and metadata
+      - name: Figshare
+        live: https://status.figshare.com
+        about: Research data and DOIs
+      - name: Overleaf
+        live: https://status.overleaf.com
+        about: Collaborative LaTeX
+      - name: Codecov
+        live: https://status.codecov.io
+        about: Test coverage reports
+      - name: CircleCI
+        live: https://status.circleci.com
+        about: Continuous integration
+      - name: Netlify
+        live: https://www.netlifystatus.com
+        about: Static site hosting
+      - name: Vercel
+        live: https://www.vercel-status.com
+        about: Site hosting and functions
+      - name: Cloudflare
+        live: https://www.cloudflarestatus.com
+        about: DNS, CDN, Workers and Pages

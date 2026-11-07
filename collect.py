@@ -350,6 +350,12 @@ def main() -> None:
     if not a.no_render:
         import render
         render.render(cfg, status, hist, a.out)
+        if (ROOT / "directory.yml").exists():
+            try:
+                import directory
+                directory.build(cfg, a.out)
+            except Exception as err:
+                print(f"no directory page this time: {err}")
 
 
 if __name__ == "__main__":

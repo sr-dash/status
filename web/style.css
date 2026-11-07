@@ -326,3 +326,30 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
   :root[data-view="compact"] #sites { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .tile, .fold svg, .b, .icon-btn, .repo, .next-bar span { transition: none; } .icon-btn.spin svg { animation: none; } }
+
+/* Directory page */
+.dir-hero { grid-template-columns: minmax(0, 1fr); }
+.dir-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.dir-tools .filters a { text-decoration: none; }
+.lead-in { margin: -4px 0 14px; color: var(--ink-2); max-width: 75ch; }
+.dir th[scope="row"] { font-weight: 600; min-width: 170px; }
+.dir .repo-path { display: block; font: 12px var(--mono); color: var(--muted); margin-top: 2px; }
+.dir .watch { display: block; color: var(--muted); font-size: 14px; margin-top: 3px; }
+.dir .num { font: 14px var(--mono); white-space: nowrap; }
+.dir .lv { white-space: nowrap; }
+.dir .lv .chip, .svc .chip { margin-left: 8px; }
+.dir .ms, .svc .ms { margin-left: 6px; font: 12px var(--mono); color: var(--muted); }
+.dir tr.ours { background: var(--accent-wash); }
+.tag { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font: 600 11px var(--mono); color: var(--accent);
+  background: var(--accent-wash); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); vertical-align: 2px; }
+.tag.warnt { color: var(--warn); background: var(--warn-wash); border-color: transparent; }
+.sort { font: inherit; text-transform: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.sort::after { content: " ↕"; opacity: .6; }
+.live-link { font: 13.5px var(--mono); }
+.svc { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.svc-item { display: grid; gap: 4px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--bg); }
+.svc-item[hidden], .dir-row[hidden], .dir-sec[hidden] { display: none; }
+.svc-item .live-link { overflow: hidden; text-overflow: ellipsis; }
+.nav-link { margin-left: 8px; font-size: 14.5px; font-weight: 500; text-decoration: none; color: var(--ink-2); }
+.nav-link:hover { color: var(--accent); }
+@media (max-width: 640px) { .nav-link { display: none; } }
