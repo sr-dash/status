@@ -53,6 +53,8 @@ repos:
     checks:
       - type: custom
         function: heliofield_product
+      - type: custom
+        function: heliofield_due
 
   - repo: heliofield-imagery
     name: HelioField imagery
@@ -63,6 +65,8 @@ repos:
         function: imagery_latest
       - type: custom
         function: imagery_retries
+      - type: custom
+        function: imagery_live
 
   - repo: heliofield-movies
     name: HelioField movies

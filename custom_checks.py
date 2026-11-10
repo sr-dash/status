@@ -50,3 +50,29 @@ def imagery_retries(ctx):
         if j.get("incomplete"):
             inc.append(f"{d} ({', '.join(j['incomplete'])})")
     return check("warn" if inc else "ok", "Panels to retry", "; ".join(inc) if inc else "None in the last 7 days", IMG + "index.json", kind="data")
+
+
+def heliofield_due(ctx):
+    """Whether the product due by now exists: today's from 21:00 UTC (the
+    day's HMI frame is taken about 16:24 and the build is tried from 18:40),
+    yesterday's before then."""
+    from datetime import timedelta
+    now = ctx["now"]
+    due = (now if now.hour >= 21 else now - timedelta(days=1)).date().isoformat()
+    last = ctx["shared"].get("field_last") or ctx["jget"](FIELD + "index.json")["dates"][-1]
+    behind = (ctx["parse"](due) - ctx["parse"](last)).days
+    state = "ok" if behind <= 0 else "warn" if behind == 1 else "fail"
+    detail = f"Due: {due}; latest: {last}" + ("" if behind <= 0 else f" ({behind} day{'s' if behind > 1 else ''} behind)")
+    return ctx["check"](state, "Today's product", detail, FIELD + "index.json", kind="data")
+
+
+def imagery_live(ctx):
+    """The live site serves what the `site` branch holds: a deployment that
+    reports success but does not take leaves them apart."""
+    branch = ctx["jget"]("https://raw.githubusercontent.com/sr-dash/heliofield-imagery/site/index.json")
+    live = ctx["jget"](IMG + "index.json")
+    same = branch.get("updated") == live.get("updated")
+    detail = ("Live site matches the branch" if same else
+              f"Live site from {live.get('updated', '?')[:16]}, branch from {branch.get('updated', '?')[:16]}; a redeploy is due")
+    return ctx["check"]("ok" if same else "warn", "Live site up to date", detail,
+                        "https://github.com/sr-dash/heliofield-imagery/deployments/github-pages", kind="pages")
