@@ -197,7 +197,9 @@ def workflows(owner: str, repo: str) -> list[dict]:
             sched = [r for r in runs if r["event"] == "schedule"]
             ts = parse(sched[0]["created_at"]) if sched else None
             # GitHub starts scheduled runs late, by hours at busy times.
-            if ts is None or hours(ts) > p * 1.25 + 4:
+            # A workflow newer than one period is not overdue yet.
+            young = ts is None and hours(parse(w["created_at"])) <= p * 1.25 + 4
+            if not young and (ts is None or hours(ts) > p * 1.25 + 4):
                 if state == "ok":
                     state = "warn"
                 detail += f"; no scheduled run for {fmt_h(hours(ts)) if ts else 'ever'} (every {fmt_h(p)})"
