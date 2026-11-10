@@ -68,6 +68,18 @@ repos:
       - type: custom
         function: imagery_live
 
+  - repo: heliofield-imagery-archive
+    name: HelioField imagery archive
+    url: https://sr-dash.github.io/heliofield-imagery-archive/index.json
+    about: One day per Carrington rotation since 2010, kept when it ages out of the daily site.
+    checks:
+      - type: json_age
+        label: Archive
+        url: https://sr-dash.github.io/heliofield-imagery-archive/index.json
+        path: updated
+        warn_hours: 1080
+        fail_hours: 1800
+
   - repo: heliofield-movies
     name: HelioField movies
     url: https://sr-dash.github.io/heliofield-movies/
