@@ -76,3 +76,22 @@ def imagery_live(ctx):
               f"Live site from {live.get('updated', '?')[:16]}, branch from {branch.get('updated', '?')[:16]}; a redeploy is due")
     return ctx["check"]("ok" if same else "warn", "Live site up to date", detail,
                         "https://github.com/sr-dash/heliofield-imagery/deployments/github-pages", kind="pages")
+
+
+def heliofield_rotation(ctx):
+    """The newest HMI rotation map on HelioField, against the calendar: JSOC
+    publishes a rotation's map about a week after it ends and the nightly run
+    adds it, so a rotation still missing 10 days after its end is late (JSOC
+    or the pipeline), and 21 days a failure."""
+    from datetime import timedelta
+    rots = ctx["jget"](FIELD + "history/index.json")["rotations"]
+    last = rots[-1]
+    end = ctx["parse"](last["stop"]) + timedelta(days=27.2753)
+    late = (ctx["now"] - end).total_seconds() / 86400
+    state = "ok" if late < 10 else "warn" if late < 21 else "fail"
+    nxt = last["cr"] + 1
+    if late < 0:
+        detail = f"Newest CR {last['cr']}; CR {nxt} ends {end:%Y-%m-%d}"
+    else:
+        detail = f"Newest CR {last['cr']}; CR {nxt} ended {end:%Y-%m-%d}, {late:.0f} days ago" + ("" if state == "ok" else ", not yet added (JSOC or the nightly run)")
+    return ctx["check"](state, "Newest rotation map", detail, FIELD + "history/index.json", kind="data")

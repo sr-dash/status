@@ -55,6 +55,8 @@ repos:
         function: heliofield_product
       - type: custom
         function: heliofield_due
+      - type: custom
+        function: heliofield_rotation
 
   - repo: heliofield-imagery
     name: HelioField imagery
@@ -104,6 +106,12 @@ repos:
         made_path: generated
         warn_hours: 48
         fail_hours: 168
+      - type: json_age
+        label: DONKI events
+        url: https://sr-dash.github.io/heliofleet/data/events.json
+        path: generated
+        warn_hours: 216
+        fail_hours: 384
       - type: json_age
         label: Observation lists
         url: https://sr-dash.github.io/heliofleet/data/obs/index.json
