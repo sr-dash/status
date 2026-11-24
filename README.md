@@ -43,7 +43,7 @@ Status pages that, like this one, run on GitHub alone (Actions do the checking, 
 | **[GitHub Status Page](https://github.com/Bullrich/Status-Page)** | Actions for the metrics, issues for incidents, Pages for the page | URL uptime | ![Stars](https://img.shields.io/github/stars/Bullrich/Status-Page?style=flat&label=%E2%98%85) ![Last commit](https://img.shields.io/github/last-commit/Bullrich/Status-Page?style=flat&label=updated) [![Live page](https://img.shields.io/website?url=https://bullrich.dev/Status-Page/&label=live&up_message=up&down_message=down&style=flat)](https://bullrich.dev/Status-Page/) |
 <!-- directory:end -->
 
-More, including serverless and self-hosted status pages and the status pages of services research software depends on, in **[DIRECTORY.md](DIRECTORY.md)** and on the [directory page](https://sr-dash.github.io/status/directory/), where every live page is checked each hour. Know one that is missing? [Suggest it](https://github.com/sr-dash/status/issues/new?template=directory.yml).
+More, including serverless and self-hosted status pages and the status pages of services research software depends on, in **[DIRECTORY.md](DIRECTORY.md)** and on the [directory page](https://sr-dash.github.io/status/directory/), where every live page is checked each hour. Know one that is missing? [Suggest it](https://github.com/sr-dash/status/issues/new?template=directory.yml) with the issue form, or open a pull request that adds it to [`directory.yml`](directory.yml) with the [directory template](.github/PULL_REQUEST_TEMPLATE/directory.md): it is checked against the [style guide](docs/directory-style-guide.md), you get a preview of your entry on the pull request, and once approved it is merged and listed automatically ([how it works](CONTRIBUTING.md#directory-pull-requests)).
 
 ## What it checks
 
@@ -68,6 +68,25 @@ The page is complete HTML from the build, so search engines index it and it read
 Your copy sets itself up: it sees it is not `sr-dash/status`, sets the settings here aside, and watches your account's repositories that have a GitHub Pages site or were pushed to in the last 60 days, at `https://<you>.github.io/<copy>/`, with a preview image drawn for you. Alerts go to you.
 
 **Your own way.** Edit `status.config.yml`: set `for_repository` to your copy (`you/status`), then your page title, description, URL and analytics ID, and the repositories to watch, each with `repo`, its site `url`, an `about` line and any data checks. With `repos: auto` your page settings stay and the list of repositories is still found for you. `python scripts/make_og.py` remakes the preview image from your settings.
+
+**Add a repository to an existing page.** Add an entry to the `repos:` list in `status.config.yml` and push; the next hourly run (or **Run workflow** under Actions → **Status**) puts it on the page:
+
+```yaml
+repos:
+  - repo: my-tool                      # the repository's name, under the page's `owner`
+    name: My tool                      # how it is shown on the page
+    url: https://me.github.io/my-tool/ # the site to check; leave it out for a repository without one
+    about: What the tool is, in a line.
+    checks:                            # optional: data checks, described below
+      - type: json_age
+        label: Data
+        url: https://me.github.io/my-tool/data/index.json
+        path: generated
+        warn_hours: 30
+        fail_hours: 54
+```
+
+Everything else is found for you: whether the site answers and how fast, its Pages deployments, every workflow's latest run (and, for scheduled ones, whether a run is overdue), and open pull requests. The page gets a section and a badge (`badges/my-tool.svg`) for it, and alerts include it. To stop watching a repository, remove its entry.
 
 Public repositories need no token. To watch private ones, add a fine-grained token with read access to their Actions, Deployments, Contents and Pull requests as the secret **`STATUS_TOKEN`**.
 
@@ -129,6 +148,6 @@ Run it locally: `pip install pyyaml pillow && GITHUB_TOKEN=$(gh auth token) pyth
 
 ## Contributing
 
-Ideas, new check types and fixes are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the [security policy](SECURITY.md).
+Ideas, new check types and fixes are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md) and the [security policy](SECURITY.md). Pull requests use one of two templates: the default one for changes to the code, and the [directory template](.github/PULL_REQUEST_TEMPLATE/directory.md) for adding a status page to the directory (add `?template=directory.md` to the address of the new pull request page).
 
 MIT licence. Made by [Soumyaranjan Dash](https://sr-dash.github.io/).

@@ -131,6 +131,19 @@ repos:
         warn_hours: 840
         fail_hours: 1560
 
+  - repo: awesome-heliophysics
+    name: Awesome Heliophysics
+    url: https://sr-dash.github.io/awesome-heliophysics/
+    about: A curated, searchable list of heliophysics data, software, models and services.
+    checks:
+      # The site rebuilds every Monday (and on each change) to refresh GitHub stars and activity
+      - type: json_age
+        label: List data
+        url: https://sr-dash.github.io/awesome-heliophysics/data/entries.json
+        path: generated
+        warn_hours: 216
+        fail_hours: 384
+
   - repo: sr-dash.github.io
     name: Homepage
     url: https://sr-dash.github.io/
