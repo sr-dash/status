@@ -129,6 +129,11 @@ sections:
         live: https://peekaping.com
         how: Go and React
         watches: HTTP, TCP, ping, DNS and more
+      - repo: NikKurkov/sitewatcher
+        name: SiteWatcher
+        live: https://monitoring.kurkov.dev/demo
+        how: Python, Docker Compose with SQLite
+        watches: Uptime and response time, TLS certificates, domain expiry
 
   - id: services
     title: Status pages research software depends on
