@@ -1,0 +1,144 @@
+name: Directory merge
+
+# After the maintainer approves a directory pull request ("Directory approval"):
+#   1. confirms the approval is the maintainer's latest review and is for the current commit;
+#   2. checks the pull request again with main's scripts (structure, style guide, checklist,
+#      repository and live page);
+#   3. squash-merges it;
+#   4. regenerates DIRECTORY.md and the README table, and rebuilds the directory page;
+#   5. thanks the contributor.
+# If anything fails, it explains why on the pull request and merges nothing.
+
+on:
+  workflow_run:
+    workflows: ["Directory approval"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: directory-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: approved-pr
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/approved
+
+      - name: Main branch scripts
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Tools
+        run: pip install pyyaml
+
+      - name: Confirm the approval and check again
+        id: verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          PR=$(tr -cd '0-9' < "$RUNNER_TEMP/approved/pr.txt")
+          if [ -z "$PR" ]; then echo "No pull request number was recorded."; exit 1; fi
+          echo "pr=$PR" >> "$GITHUB_OUTPUT"
+          gh api "repos/$REPO/pulls/$PR" > "$RUNNER_TEMP/pr.json"
+          HEAD=$(jq -r '.head.sha' "$RUNNER_TEMP/pr.json")
+          echo "head=$HEAD" >> "$GITHUB_OUTPUT"
+          reason=""
+          [ "$(jq -r '.state' "$RUNNER_TEMP/pr.json")" = "open" ] || reason="it is no longer open."
+          [ "$(jq -r '.draft' "$RUNNER_TEMP/pr.json")" = "false" ] || reason="${reason:-it is still a draft.}"
+          [ "$(jq -r '.base.ref' "$RUNNER_TEMP/pr.json")" = "main" ] || reason="${reason:-it does not target main.}"
+          latest=$(gh api "repos/$REPO/pulls/$PR/reviews" --paginate \
+            --jq ".[] | select(.user.login == \"$OWNER\" and .state != \"COMMENTED\") | \"\(.state) \(.commit_id)\"" | tail -n 1)
+          [ "$latest" = "APPROVED $HEAD" ] || reason="${reason:-the maintainer's latest review is not an approval of the current commit.}"
+
+          gh api "repos/$REPO/pulls/$PR/files" --paginate --jq '.[].filename' > "$RUNNER_TEMP/files.txt"
+          jq -r '.body // ""' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/body.md"
+          git fetch --no-tags origin "pull/$PR/head"
+          git show FETCH_HEAD:directory.yml > "$RUNNER_TEMP/head.yml" || : > "$RUNNER_TEMP/head.yml"
+          git show "$(git merge-base FETCH_HEAD HEAD)":directory.yml > "$RUNNER_TEMP/base.yml"
+          if ! python3 scripts/check_directory_pr.py --base "$RUNNER_TEMP/base.yml" --head "$RUNNER_TEMP/head.yml" \
+               --files "$RUNNER_TEMP/files.txt" --body "$RUNNER_TEMP/body.md" --network \
+               --json "$RUNNER_TEMP/result.json" --summary "$GITHUB_STEP_SUMMARY" > /dev/null; then
+            reason="${reason:-the directory check no longer passes; see the overview comment.}"
+          fi
+          echo "names=$(jq -r '.names | join(", ")' "$RUNNER_TEMP/result.json")" >> "$GITHUB_OUTPUT"
+          echo "author=$(jq -r '.user.login' "$RUNNER_TEMP/pr.json")" >> "$GITHUB_OUTPUT"
+          if [ -n "$reason" ]; then echo "reason=$reason" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Explain why it was not merged
+        if: steps.verify.outputs.reason != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ steps.verify.outputs.pr }}
+          REASON: ${{ steps.verify.outputs.reason }}
+        run: |
+          python3 scripts/render_directory_comment.py blocked "$REASON" > "$RUNNER_TEMP/blocked.md"
+          gh pr comment "$PR" -R "$REPO" --body-file "$RUNNER_TEMP/blocked.md"
+          echo "::error::Not merged: $REASON"
+          exit 1
+
+      - name: Merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ steps.verify.outputs.pr }}
+          HEAD: ${{ steps.verify.outputs.head }}
+        run: |
+          if ! gh pr merge "$PR" -R "$REPO" --squash --match-head-commit "$HEAD"; then
+            python3 scripts/render_directory_comment.py blocked \
+              "GitHub could not merge it, usually because it conflicts with entries added to main since it was opened. Please update the branch from main (keep both entries) and push." \
+              > "$RUNNER_TEMP/blocked.md"
+            gh pr comment "$PR" -R "$REPO" --body-file "$RUNNER_TEMP/blocked.md"
+            exit 1
+          fi
+
+      - name: Regenerate DIRECTORY.md and the README table
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR: ${{ steps.verify.outputs.pr }}
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+          python3 directory.py --markdown
+          if git diff --quiet -- DIRECTORY.md README.md; then
+            echo "DIRECTORY.md and the README table are already current."
+          else
+            git add DIRECTORY.md README.md
+            git -c user.name="Soumyaranjan Dash" -c user.email="sdash@nso.edu" \
+              commit -m "Directory: regenerate DIRECTORY.md after #$PR"
+            git push origin main
+          fi
+
+      - name: Rebuild the directory page
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh workflow run status.yml -R "$REPO" --ref main
+
+      - name: Thank the contributor
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ steps.verify.outputs.pr }}
+          AUTHOR: ${{ steps.verify.outputs.author }}
+          NAMES: ${{ steps.verify.outputs.names }}
+        run: |
+          python3 scripts/render_directory_comment.py merged "$AUTHOR" "$NAMES" > "$RUNNER_TEMP/merged.md"
+          gh pr comment "$PR" -R "$REPO" --body-file "$RUNNER_TEMP/merged.md"

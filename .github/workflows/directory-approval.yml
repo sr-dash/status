@@ -1,0 +1,30 @@
+name: Directory approval
+
+# Records the maintainer's approval of a pull request, for "Directory merge" to act on. Reviews of
+# pull requests from forks run with a read-only token, so the merge happens in a separate workflow
+# (workflow_run) that has write access and uses only main's code.
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    if: >-
+      github.event.review.state == 'approved' &&
+      github.event.review.user.login == github.repository_owner &&
+      contains(github.event.pull_request.labels.*.name, 'directory')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record the pull request number
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: echo "$PR" > pr.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: approved-pr
+          path: pr.txt
+          retention-days: 1

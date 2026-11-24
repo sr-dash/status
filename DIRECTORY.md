@@ -2,7 +2,7 @@
 
 Open-source status pages, sorted by how they run, with a live page for each where there is one, and the status pages of services that research software relies on. Stars, last commit and whether each live page is up come from [shields.io](https://shields.io), so they are always current; [the web version](https://sr-dash.github.io/status/directory/) also checks each page every hour.
 
-This list belongs to [sr-dash/status](https://github.com/sr-dash/status), a status page that runs on GitHub alone and sets itself up in a copy. Know one that is missing? [Suggest it](https://github.com/sr-dash/status/issues/new?template=directory.yml) or open a pull request that adds it to [`directory.yml`](directory.yml).
+This list belongs to [sr-dash/status](https://github.com/sr-dash/status), a status page that runs on GitHub alone and sets itself up in a copy. Know one that is missing? [Suggest it](https://github.com/sr-dash/status/issues/new?template=directory.yml), or open a pull request that adds it to [`directory.yml`](directory.yml) using the [directory template](https://github.com/sr-dash/status/blob/main/.github/PULL_REQUEST_TEMPLATE/directory.md) and the [style guide](docs/directory-style-guide.md): it is checked automatically, and once approved it is merged and appears here by itself.
 
 - [Runs on GitHub alone](#runs-on-github-alone)
 - [Serverless, on Cloudflare](#serverless-on-cloudflare)

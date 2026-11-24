@@ -1,3 +1,5 @@
+<!-- Adding a status page to the directory? Edit only directory.yml and use the directory template instead: replace this text with the contents of .github/PULL_REQUEST_TEMPLATE/directory.md (https://github.com/sr-dash/status/blob/main/.github/PULL_REQUEST_TEMPLATE/directory.md), or add ?template=directory.md to the address of the pull request page. -->
+
 ## What this changes
 
 <!-- A short description of the change and why it is needed. Link the issue it addresses, e.g. "Closes #12". -->

@@ -1,0 +1,1 @@
+Thank you, @{{AUTHOR}}. **{{NAMES}}** is now in the directory: see [DIRECTORY.md](https://github.com/sr-dash/status/blob/main/DIRECTORY.md) and, after its next rebuild in a few minutes, the [directory page](https://sr-dash.github.io/status/directory/), which checks the live page every hour.

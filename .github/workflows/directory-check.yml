@@ -1,0 +1,105 @@
+name: Directory check
+
+# Screens pull requests that change directory.yml and posts an overview for the maintainer: a
+# preview of each new or edited entry, the problems to fix, and a review checklist. It labels the
+# pull request "directory: ready for review" or "directory: needs changes".
+#
+# It runs on pull_request_target so it can comment on pull requests from forks. It never checks out
+# or runs the pull request's code: the scripts come from main, and the proposed directory.yml and
+# the description are read only as data.
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: directory-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Main branch scripts
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Is this a directory pull request?
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh api "repos/$REPO/pulls/$PR/files" --paginate --jq '.[].filename' > "$RUNNER_TEMP/files.txt"
+          if grep -qx 'directory.yml' "$RUNNER_TEMP/files.txt"; then
+            echo "directory=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "directory=false" >> "$GITHUB_OUTPUT"
+            echo "This pull request does not change directory.yml; nothing to check here." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Read the proposed directory.yml and the description
+        if: steps.scope.outputs.directory == 'true'
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s' "$BODY" > "$RUNNER_TEMP/body.md"
+          git fetch --no-tags origin "pull/$PR/head"
+          git show FETCH_HEAD:directory.yml > "$RUNNER_TEMP/head.yml" || : > "$RUNNER_TEMP/head.yml"
+          # Compare with the commit the pull request branched from, so entries merged since then
+          # are not mistaken for removals
+          git show "$(git merge-base FETCH_HEAD HEAD)":directory.yml > "$RUNNER_TEMP/base.yml"
+
+      - name: Tools
+        if: steps.scope.outputs.directory == 'true'
+        run: pip install pyyaml
+
+      - name: Check against the rules and the style guide
+        id: check
+        if: steps.scope.outputs.directory == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          python3 scripts/check_directory_pr.py --base "$RUNNER_TEMP/base.yml" --head "$RUNNER_TEMP/head.yml" \
+            --files "$RUNNER_TEMP/files.txt" --body "$RUNNER_TEMP/body.md" --network \
+            --json "$RUNNER_TEMP/result.json" --summary "$GITHUB_STEP_SUMMARY" > /dev/null
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Post or update the overview, and label the pull request
+        if: steps.scope.outputs.directory == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          STATUS: ${{ steps.check.outputs.status }}
+        run: |
+          python3 scripts/render_directory_comment.py review "$RUNNER_TEMP/result.json" "$SHA" > "$RUNNER_TEMP/comment.md"
+          id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- directory-check -->"))) | .id' | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
+          else
+            gh api "repos/$REPO/issues/$PR/comments" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
+          fi
+          if [ "$STATUS" = "0" ]; then add="directory: ready for review"; drop="directory: needs changes"
+          else add="directory: needs changes"; drop="directory: ready for review"; fi
+          gh pr edit "$PR" -R "$REPO" --add-label "directory" --add-label "$add" > /dev/null
+          gh pr edit "$PR" -R "$REPO" --remove-label "$drop" > /dev/null 2>&1 || true
+
+      - name: Fail while changes are needed
+        if: steps.scope.outputs.directory == 'true' && steps.check.outputs.status != '0'
+        run: |
+          echo "::error::The directory entry needs changes; see the overview comment on the pull request."
+          exit 1

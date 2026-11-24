@@ -7,6 +7,7 @@ Thank you for helping. This status page is meant to work for anyone's repositori
 - **Report something that looks wrong**: a check that says a site is failing when it is fine (or the reverse), a page that does not set itself up in your copy, a layout that breaks. Use the [issue forms](https://github.com/sr-dash/status/issues/new/choose) and include the address of your status page.
 - **Suggest a check or a feature** with the feature form: a kind of data feed, a service or a signal a status page should watch.
 - **Tell us you use it** with the "I use this" form, or show your page in [Show and tell](https://github.com/sr-dash/status/discussions/categories/show-and-tell).
+- **Add a status page to the [directory](DIRECTORY.md)**: suggest it with the directory issue form, or open a pull request that edits only `directory.yml` (see [Directory pull requests](#directory-pull-requests)).
 - **Send a pull request** for a fix or a feature. For anything larger than a small fix, please open an issue first so we can agree on the approach.
 
 Problems with the sites the page watches (HelioField, HelioFleet and the others) belong in those repositories, not here.
@@ -41,5 +42,22 @@ GITHUB_REPOSITORY=octocat/status GITHUB_TOKEN=$(gh auth token) python collect.py
 - One change per pull request, with a short description of what and why.
 - Run the collector locally, open the page, and check it at phone width and in both themes, with no console errors.
 - Commit messages in the imperative, under 72 characters for the first line.
+
+## Directory pull requests
+
+The [directory](DIRECTORY.md) is generated from [`directory.yml`](directory.yml), so a directory pull request changes that
+file only.
+
+1. Add your entry at the end of its section, following the [style guide](docs/directory-style-guide.md).
+2. Open the pull request with the [directory template](.github/PULL_REQUEST_TEMPLATE/directory.md) (add
+   `?template=directory.md` to the address of the pull request page, or paste the template in) and tick every box.
+3. A check posts an overview on the pull request: a preview of your row, anything to fix, and the maintainer's
+   review checklist. It runs again on every push, and labels the pull request `directory: ready for review` or
+   `directory: needs changes`.
+4. The maintainer reviews it. When they approve it, it is checked once more and merged automatically; DIRECTORY.md,
+   the README table and the [directory page](https://sr-dash.github.io/status/directory/) then update by themselves.
+
+The checks never run code from a pull request: they read the proposed `directory.yml` as data with the scripts on
+main.
 
 By contributing you agree that your contribution is released under the project's [MIT licence](LICENSE).

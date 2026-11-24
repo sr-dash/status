@@ -98,8 +98,11 @@ def markdown(d: dict) -> str:
              "[the web version](https://sr-dash.github.io/status/directory/) also checks each page every hour.", "",
              "This list belongs to [sr-dash/status](https://github.com/sr-dash/status), a status page that runs on GitHub "
              "alone and sets itself up in a copy. Know one that is missing? "
-             "[Suggest it](https://github.com/sr-dash/status/issues/new?template=directory.yml) or open a pull request "
-             "that adds it to [`directory.yml`](directory.yml).", ""]
+             "[Suggest it](https://github.com/sr-dash/status/issues/new?template=directory.yml), or open a pull request "
+             "that adds it to [`directory.yml`](directory.yml) using the "
+             "[directory template](https://github.com/sr-dash/status/blob/main/.github/PULL_REQUEST_TEMPLATE/directory.md) "
+             "and the [style guide](docs/directory-style-guide.md): it is checked automatically, and once approved it is "
+             "merged and appears here by itself.", ""]
     lines += [f"- [{s['title']}](#{re.sub(r'[^a-z0-9 -]', '', s['title'].lower()).replace(' ', '-')})" for s in d["sections"]] + [""]
     for s in d["sections"]:
         lines += [f"## {s['title']}", "", " ".join(s["about"].split()), ""]
